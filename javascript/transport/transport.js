@@ -1,5 +1,6 @@
 Faye.Transport = Faye.extend(Faye.Class({
   MAX_DELAY: <%= Faye::Engine::MAX_DELAY %>,
+  MAX_MESSAGES: 25,
   batching:  true,
 
   initialize: function(client, endpoint) {
@@ -19,6 +20,11 @@ Faye.Transport = Faye.extend(Faye.Class({
 
     this._outbox.push(message);
     this._timeout = timeout;
+
+    if (this._outbox.length >= this.MAX_MESSAGES) {
+      this.debug('Flushing due to too many message');
+      return this.flush();
+    }
 
     if (message.channel === Faye.Channel.HANDSHAKE)
       return this.flush();
